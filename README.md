@@ -54,6 +54,8 @@ Tones: natural, professional, friendly, firm, concise, grammar.
 - `prompts.json`: the writing rules and the tones.
 - Environment variables `POLISH_MODEL`, `POLISH_TONE` and `GROQ_API_KEY` override the files.
 
+**Model:** TextPolish works on Groq's free plan. The default model, `openai/gpt-oss-120b`, is free to use there and is what we recommend. You don't need to change anything.
+
 Groq free-tier limits change over time. Check https://console.groq.com/settings/limits for the current numbers.
 
 ## Privacy
