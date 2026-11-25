@@ -23,7 +23,9 @@ gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk, GLib, Gtk  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-KEY_FILE = os.path.expanduser("~/.config/writing-polisher/api_key")
+KEY_FILE = os.path.expanduser("~/.config/textpolish/api_key")
+# Older installs saved the key here; still read it so they keep working.
+OLD_KEY_FILE = os.path.expanduser("~/.config/writing-polisher/api_key")
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 
@@ -49,11 +51,13 @@ TONE_LABELS = {
 def load_api_key():
     if os.environ.get("GROQ_API_KEY"):
         return os.environ["GROQ_API_KEY"]
-    try:
-        with open(KEY_FILE) as f:
-            return f.read().strip()
-    except OSError:
-        return None
+    for path in (KEY_FILE, OLD_KEY_FILE):
+        try:
+            with open(path) as f:
+                return f.read().strip()
+        except OSError:
+            pass
+    return None
 
 
 def read_selection():

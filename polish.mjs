@@ -14,8 +14,10 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const CONFIG_DIR = path.join(os.homedir(), ".config", "writing-polisher");
+const CONFIG_DIR = path.join(os.homedir(), ".config", "textpolish");
 const KEY_FILE = path.join(CONFIG_DIR, "api_key");
+// Older installs saved the key here; still read it so they keep working.
+const OLD_KEY_FILE = path.join(os.homedir(), ".config", "writing-polisher", "api_key");
 const PORT = Number(process.env.POLISH_PORT || 8765);
 // Model and default tone live in settings.json (shared with the desktop app); env vars override.
 // Lines starting with // are comments, so alternative models can be kept there commented out.
@@ -30,11 +32,12 @@ const { system: SYSTEM_PROMPT, tones: TONES } = JSON.parse(fs.readFileSync(path.
 
 function loadApiKey() {
   if (process.env.GROQ_API_KEY) return process.env.GROQ_API_KEY;
-  try {
-    return fs.readFileSync(KEY_FILE, "utf8").trim();
-  } catch {
-    return undefined;
+  for (const file of [KEY_FILE, OLD_KEY_FILE]) {
+    try {
+      return fs.readFileSync(file, "utf8").trim();
+    } catch {}
   }
+  return undefined;
 }
 
 let client;

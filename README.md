@@ -18,7 +18,7 @@ Uses Groq's free API tier. You bring your own Groq API key.
     cd ~/textpolish && npm install
     mkdir -p ~/.local/bin
     printf '#!/bin/sh\nexec "%s" "%s/polish.mjs" "$@"\n' "$(which node)" "$PWD" > ~/.local/bin/polish && chmod +x ~/.local/bin/polish
-    polish set-key        # paste your Groq API key (saved to ~/.config/writing-polisher/api_key)
+    polish set-key        # paste your Groq API key (saved to ~/.config/textpolish/api_key)
 
 Then add a keyboard shortcut. On Cinnamon: **System Settings → Keyboard → Shortcuts → Custom Shortcuts**.
 Command: `/usr/bin/python3 ~/textpolish/polisher_app.py`, keys: **Ctrl+Alt+P**.
@@ -39,7 +39,7 @@ Tones: natural, professional, friendly, firm, concise, grammar.
 Groq free-tier limits change over time. Check https://console.groq.com/settings/limits for the current numbers.
 
 ## Privacy
-Your text is sent to Groq's API to be rewritten. Your API key stays on your machine in `~/.config/writing-polisher/api_key`.
+Your text is sent to Groq's API to be rewritten. Your API key stays on your machine in `~/.config/textpolish/api_key`.
 
 ## Contributing
 TextPolish is open source and contributions are welcome.
