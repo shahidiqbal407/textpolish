@@ -31,6 +31,24 @@ Other desktops have a similar custom-shortcut setting.
 
 Tones: natural, professional, friendly, firm, concise, grammar.
 
+## Examples
+
+**Desktop app** (natural tone):
+
+![TextPolish desktop app polishing a short message in the natural tone](docs/screenshots/desktop-app.png)
+
+**Professional tone:**
+
+![TextPolish desktop app with the professional tone selected](docs/screenshots/tone-professional.png)
+
+**Terminal:**
+
+    $ polish "i has finish the task yesterday but forgot to update you, sorry about that"
+    I finished the task yesterday but forgot to let you know—sorry about that.
+
+    $ polish --tone firm "can you please maybe try to send the invoice soon if possible, its been two weeks"
+    Could you please send the invoice as soon as possible? It’s been two weeks.
+
 ## Settings
 - `settings.json`: the model and the default tone.
 - `prompts.json`: the writing rules and the tones.
