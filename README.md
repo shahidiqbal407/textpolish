@@ -1,25 +1,54 @@
-# Writing Polisher
+# TextPolish
 
-Write rough, get back clear, correct, human-sounding text. Uses Groq's free tier. Change the model and default tone in `settings.json`; writing rules and tones are in `prompts.json`. Full guide: https://claude.ai/code/artifact/2a3ea055-b347-49e9-9d71-4c72906908a2
+Write rough, get back clear, correct, human-sounding text. Highlight text in any app, press **Ctrl+Alt+P**, and a small window shows the polished version as it is written. The result is copied to your clipboard automatically.
 
-## Setup (once)
-    polish set-key        # paste your Groq API key from console.groq.com/keys (saved to ~/.config/writing-polisher/api_key)
+Uses Groq's free API tier. You bring your own Groq API key.
+
+> **Linux only (for now).** TextPolish is built and tested on Linux Mint (Cinnamon, X11). It should work on most X11 desktops with GTK 3. Wayland, macOS and Windows are not supported yet. Pull requests that add support are welcome.
+
+## Requirements
+- Linux with an X11 session
+- Python 3 with GTK 3 bindings (PyGObject). Preinstalled on Linux Mint and most GNOME/Cinnamon desktops.
+- `xclip` (`sudo apt install xclip`)
+- Node.js (tested on v22) and npm, for the `polish` command
+- A free Groq API key from https://console.groq.com/keys
+
+## Install
+    git clone https://github.com/shahidiqbal407/textpolish.git ~/textpolish
+    cd ~/textpolish && npm install
+    mkdir -p ~/.local/bin
+    printf '#!/bin/sh\nexec "%s" "%s/polish.mjs" "$@"\n' "$(which node)" "$PWD" > ~/.local/bin/polish && chmod +x ~/.local/bin/polish
+    polish set-key        # paste your Groq API key (saved to ~/.config/writing-polisher/api_key)
+
+Then add a keyboard shortcut. On Cinnamon: **System Settings → Keyboard → Shortcuts → Custom Shortcuts**.
+Command: `/usr/bin/python3 ~/textpolish/polisher_app.py`, keys: **Ctrl+Alt+P**.
+Other desktops have a similar custom-shortcut setting.
 
 ## Use it
-- **Anywhere (hotkey):** highlight text in any app, press **Ctrl+Alt+P**. A small window opens and shows the rewrite as it is written; the result is copied automatically. Press Enter to close, then Ctrl+V.
-- **Desktop app:** "Writing Polisher" in the app menu (or `polisher_app.py --new`) to type text in directly. `polish serve` still opens a browser version.
+- **Anywhere (hotkey):** highlight text in any app, press **Ctrl+Alt+P**. Press Enter to close the window, then Ctrl+V.
+- **Desktop app:** run `polisher_app.py --new` to type text in directly. `polish serve` opens a browser version.
 - **Terminal:** `polish "your text"`, `polish --tone firm "..."`, or `echo text | polish`
 
 Tones: natural, professional, friendly, firm, concise, grammar.
 
-Free-tier limits (check console.groq.com/settings/limits): ~30 requests/min, 1,000/day, 200K tokens/day. Roughly 150-300 polishes a day.
+## Settings
+- `settings.json`: the model and the default tone.
+- `prompts.json`: the writing rules and the tones.
+- Environment variables `POLISH_MODEL`, `POLISH_TONE` and `GROQ_API_KEY` override the files.
 
-## Install on a new machine (Linux Mint / Cinnamon)
-    git clone https://github.com/shahidiqbal407/grammer-assistant.git ~/projects/writing-polisher
-    cd ~/projects/writing-polisher && npm install
-    printf '#!/bin/sh\nexec "%s" "%s/polish.mjs" "$@"\n' "$(which node)" "$PWD" > ~/.local/bin/polish && chmod +x ~/.local/bin/polish
-    polish set-key
+Groq free-tier limits change over time. Check https://console.groq.com/settings/limits for the current numbers.
 
-Then add the shortcut in **System Settings → Keyboard → Shortcuts → Custom Shortcuts**:
-command `/usr/bin/python3 ~/projects/writing-polisher/polisher_app.py`, keys **Ctrl+Alt+P**.
-Needs `xclip` (`sudo apt install xclip` if missing).
+## Privacy
+Your text is sent to Groq's API to be rewritten. Your API key stays on your machine in `~/.config/writing-polisher/api_key`.
+
+## Contributing
+TextPolish is open source and contributions are welcome.
+
+1. Fork the repo and create a branch.
+2. Make your change, and test it on Linux.
+3. Open a pull request that explains what it changes and why.
+
+All pull requests are reviewed, and only the maintainer can merge. Bug reports and ideas are welcome in Issues.
+
+## License
+MIT. See [LICENSE](LICENSE).
