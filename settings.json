@@ -1,0 +1,15 @@
+{
+  // Choose ONE model: keep exactly one "model" line active and put // in front of the others.
+
+  // Best writing quality. Fast (about 1-2 seconds). Default.
+  "model": "openai/gpt-oss-120b",
+
+  // Fastest (under 1 second), slightly simpler writing. Has its own separate free daily allowance.
+  // "model": "openai/gpt-oss-20b",
+
+  // Qwen 3.8 (preview model: Groq may remove it at short notice). Good writing, a little slower.
+  // "model": "qwen/qwen3.8-27b",
+
+  // Default tone: natural, professional, friendly, firm, concise, or grammar
+  "tone": "natural"
+}

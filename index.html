@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Writing Polisher</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --text: #1f1f1d; --muted: #6b6a66;
+    --border: #e2e0da; --accent: #c2603a; --accent-text: #ffffff; --good: #2f7d4f; --bad: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a19; --panel: #242422; --text: #ecebe7; --muted: #a09f99;
+      --border: #3a3936; --accent: #d97757; --accent-text: #1a1a19; --good: #6cc48f; --bad: #f2867c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 28px 16px 40px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+  label { font-size: 13px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; }
+  textarea { width: 100%; min-height: 150px; resize: vertical; padding: 12px 14px; font: inherit;
+             color: var(--text); background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0 22px; }
+  .tones { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tones button { background: var(--panel); color: var(--text); border: 1px solid var(--border);
+                  padding: 6px 12px; border-radius: 999px; font: inherit; font-size: 14px; cursor: pointer; }
+  .tones button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .primary { margin-left: auto; background: var(--accent); color: var(--accent-text); border: 0;
+             padding: 10px 20px; border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer; }
+  .primary:disabled { opacity: .6; cursor: wait; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .out-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .out-head label { margin: 0; }
+  .copy { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 8px;
+          padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  #output { min-height: 150px; background: var(--panel); }
+  #status { font-size: 14px; min-height: 1.4em; margin-top: 8px; }
+  #status.err { color: var(--bad); } #status.ok { color: var(--good); }
+  @media (max-width: 560px) { .primary { margin-left: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Writing Polisher</h1>
+  <p class="sub">Write it rough. Get it back clear, correct, and human.</p>
+
+  <label for="input">Your draft</label>
+  <textarea id="input" autofocus placeholder="e.g. Please always keep the ticket status upto date.you are working here and it was in backlog."></textarea>
+
+  <div class="row">
+    <div class="tones" role="group" aria-label="Tone">
+      <button data-tone="natural" aria-pressed="true">Natural</button>
+      <button data-tone="professional">Professional</button>
+      <button data-tone="friendly">Friendly</button>
+      <button data-tone="firm">Firm</button>
+      <button data-tone="concise">Concise</button>
+      <button data-tone="grammar">Grammar only</button>
+    </div>
+    <button class="primary" id="go">Polish <span class="hint" style="color:inherit;opacity:.8">Ctrl+Enter</span></button>
+  </div>
+
+  <div class="out-head">
+    <label for="output">Polished</label>
+    <button class="copy" id="copy">Copy</button>
+  </div>
+  <textarea id="output" placeholder="Your polished text will appear here."></textarea>
+  <div id="status" role="status"></div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let tone = "natural";
+  try { tone = localStorage.getItem("tone") || "natural"; } catch {}
+
+  const toneButtons = document.querySelectorAll(".tones button");
+  function setTone(t) {
+    tone = t;
+    toneButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tone === t)));
+    try { localStorage.setItem("tone", t); } catch {}
+  }
+  toneButtons.forEach((b) => b.addEventListener("click", () => setTone(b.dataset.tone)));
+  setTone(tone);
+
+  function status(msg, cls = "") { $("status").textContent = msg; $("status").className = cls; }
+
+  async function copyOut() {
+    const text = $("output").value;
+    if (!text) return;
+    try { await navigator.clipboard.writeText(text); }
+    catch { $("output").select(); document.execCommand("copy"); }
+    status("Copied to clipboard.", "ok");
+  }
+
+  async function run() {
+    const text = $("input").value;
+    if (!text.trim()) return status("Write something first.", "err");
+    $("go").disabled = true;
+    status("Thinking…");
+    try {
+      const res = await fetch("/api/polish", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text, tone }),
+      });
+      const out = $("output");
+      out.value = "";
+      const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buf = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += value;
+        let nl;
+        while ((nl = buf.indexOf("\n")) !== -1) {
+          const msg = JSON.parse(buf.slice(0, nl));
+          buf = buf.slice(nl + 1);
+          if (msg.delta) {
+            if (!out.value) status("Writing…");
+            out.value += msg.delta;
+          } else if (msg.done) {
+            out.value = msg.result;
+            await copyOut();
+          } else if (msg.error) {
+            throw new Error(msg.error);
+          }
+        }
+      }
+    } catch (err) {
+      status(err.message, "err");
+    } finally {
+      $("go").disabled = false;
+    }
+  }
+
+  $("go").addEventListener("click", run);
+  $("copy").addEventListener("click", copyOut);
+  $("input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  });
+</script>
+</body>
+</html>
